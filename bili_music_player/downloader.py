@@ -6,6 +6,11 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable
 
+try:
+    import imageio_ffmpeg
+except ImportError:  # Optional at import time; surfaced when download needs ffmpeg.
+    imageio_ffmpeg = None
+
 from yt_dlp import YoutubeDL
 from yt_dlp.utils import DownloadError
 
@@ -150,7 +155,7 @@ class BiliAudioDownloader:
         if progress_callback is not None:
             hooks.append(lambda data: self._handle_progress(data, progress_callback))
 
-        return {
+        options = {
             "format": AUDIO_ONLY_FORMAT,
             "outtmpl": str(output_dir / f"{filename_prefix}%(title).200B [%(id)s].%(ext)s"),
             "noplaylist": True,
@@ -165,6 +170,10 @@ class BiliAudioDownloader:
             "quiet": True,
             "no_warnings": True,
         }
+        ffmpeg_exe = self._find_ffmpeg_executable()
+        if ffmpeg_exe is not None:
+            options["ffmpeg_location"] = ffmpeg_exe
+        return options
 
     def _resolve_output_path(self, ydl: YoutubeDL, info: dict, output_dir: Path) -> Path:
         requested_downloads = info.get("requested_downloads") or []
@@ -277,11 +286,20 @@ class BiliAudioDownloader:
         return float(duration) if isinstance(duration, (int, float)) else None
 
     @staticmethod
+    def _find_ffmpeg_executable() -> str | None:
+        if imageio_ffmpeg is None:
+            return None
+        try:
+            return imageio_ffmpeg.get_ffmpeg_exe()
+        except Exception:
+            return None
+
+    @staticmethod
     def _friendly_error(exc: DownloadError, prefix: str) -> str:
         message = str(exc)
         lowered = message.lower()
         if "ffmpeg" in lowered:
-            return "音频提取需要 ffmpeg。请安装 ffmpeg 并加入 PATH 后重试。"
+            return "音频提取需要 ffmpeg。请安装 ffmpeg，或安装 requirements.txt 里的 imageio-ffmpeg 后重试。"
         if "requested format is not available" in lowered:
             return f"{prefix}：未找到可用的独立音频流，已避免下载完整视频文件。"
         return f"{prefix}：{message}"

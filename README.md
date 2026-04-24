@@ -38,9 +38,11 @@
    pip install -r requirements.txt
    ```
 
-3. 安装 ffmpeg：
+   `requirements.txt` 已包含 `imageio-ffmpeg`，程序会优先使用它自带的 ffmpeg 二进制做音频转换，因此通常**不需要额外手动安装系统级 ffmpeg**。
 
-   直接串流解析本身不依赖 ffmpeg，但“保存到本地”和“临时音频缓存 fallback”需要用 ffmpeg 将音频转换为 mp3。任选一种方式安装：
+3. （可选）安装系统 ffmpeg：
+
+   如果你更希望系统里也能直接运行 `ffmpeg` 命令，可以额外安装：
 
    - 使用 winget：
 
@@ -74,7 +76,7 @@ python -m bili_music_player
 
 ## 常见问题
 
-- 如果提示需要 `ffmpeg`，请确认已安装 ffmpeg，并且 `ffmpeg.exe` 所在目录已经加入 `PATH`。
+- 如果提示需要 `ffmpeg`，先确认已经执行过 `pip install -r requirements.txt`；本项目会优先使用 `imageio-ffmpeg` 自带的 ffmpeg。若你想让命令行也能直接用 `ffmpeg`，再额外安装系统级 ffmpeg。
 - 如果 Bilibili 链接需要登录权限、会员权限或地区权限，`yt-dlp` 可能无法直接解析或获取音频。
 - 如果“播放/串流”一开始没有立刻出声，可能是 pygame 不能直接打开该远程流，程序正在转入临时音频缓存 fallback。
 - 如果播放本地缓存失败，请确认音频文件仍在 `downloads/` 文件夹中，或点击“刷新列表”清理不存在的条目。
