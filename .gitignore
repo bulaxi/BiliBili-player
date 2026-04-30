@@ -1,5 +1,13 @@
-__pycache__/
+﻿__pycache__/
 *.py[cod]
-.venv/
-venv/
+*$py.class
 downloads/
+state/
+build/
+dist/
+*.spec
+.vscode/
+.env
+venv/
+env/
+ENV/
